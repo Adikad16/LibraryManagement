@@ -1,0 +1,94 @@
+mysql> use adikad
+Database changed
+mysql> CREATE TABLE Books (
+    ->     book_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     title VARCHAR(255) NOT NULL,
+    ->     author VARCHAR(255) NOT NULL,
+    ->     genre VARCHAR(100),
+    ->     publication_year YEAR,
+    ->     available_copies INT DEFAULT 1
+    -> );
+Query OK, 0 rows affected (0.12 sec)
+
+mysql>
+mysql> CREATE TABLE Patrons (
+    ->     patron_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     first_name VARCHAR(100) NOT NULL,
+    ->     last_name VARCHAR(100) NOT NULL,
+    ->     email VARCHAR(100),
+    ->     phone_number VARCHAR(15)
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql>
+mysql> CREATE TABLE Loans (
+    ->     loan_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     book_id INT,
+    ->     patron_id INT,
+    ->     loan_date DATE NOT NULL,
+    ->     return_date DATE,
+    ->     FOREIGN KEY (book_id) REFERENCES Books(book_id),
+    ->     FOREIGN KEY (patron_id) REFERENCES Patrons(patron_id)
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+
+================== Add a New Book
+mysql> INSERT INTO Books (title, author, genre, publication_year, available_copies)
+    -> VALUES ('The Great Gatsby', 'F. Scott Fitzgerald', 'Fiction', 1925, 3);
+Query OK, 1 row affected (0.03 sec)
+
+
+==================== Add a New Patron
+mysql> INSERT INTO Patrons (first_name, last_name, email, phone_number)
+    -> VALUES ('John', 'Doe', 'john.doe@example.com', '123-456-7890');
+Query OK, 1 row affected (0.01 sec)
+
+===================== Loan a Book to a Patron
+mysql> INSERT INTO Loans (book_id, patron_id, loan_date)
+    -> VALUES (1, 1, CURDATE());
+Query OK, 1 row affected (0.01 sec)
+
+====================== Return a Book
+mysql> UPDATE Loans
+    -> SET return_date = CURDATE()
+    -> WHERE loan_id = 1; -- Replace with the actual loan ID
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+
+======================= List All Books Currently Loaned Out
+mysql> SELECT b.title, p.first_name, p.last_name, l.loan_date
+    -> FROM Loans l
+    -> JOIN Books b ON l.book_id = b.book_id
+    -> JOIN Patrons p ON l.patron_id = p.patron_id
+    -> WHERE l.return_date IS NULL;
+Empty set (0.00 sec)
+
+
+
+====================== Check Available Copies of a Book
+mysql> SELECT title, available_copies
+    -> FROM Books
+    -> WHERE book_id = 1; -- Replace with the actual book ID
++------------------+------------------+
+| title            | available_copies |
++------------------+------------------+
+| The Great Gatsby |                3 |
++------------------+------------------+
+1 row in set (0.01 sec)
+
+
+
+======================= Find All Books Loaned by a Specific Patron
+mysql> SELECT b.title, l.loan_date
+    -> FROM Loans l
+    -> JOIN Books b ON l.book_id = b.book_id
+    -> WHERE l.patron_id = 1; -- Replace with the actual patron ID
++------------------+------------+
+| title            | loan_date  |
++------------------+------------+
+| The Great Gatsby | 2024-11-28 |
++------------------+------------+
+1 row in set (0.00 sec)
+
